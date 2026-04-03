@@ -1,0 +1,50 @@
+﻿@inherits LayoutComponentBase
+
+<div class="app-container">
+    <div class="sidebar" style="width: 320px;">
+        <div class="profile">
+            <img src="#" alt="Photo" />
+            <h4>Petr Pavel</h4> 
+        </div>
+        <nav class="nav flex-column">
+            <NavLink class="nav-link" href="/task" ActiveClass="active">
+                <span class="oi oi-document"></span> Task
+            </NavLink>
+            <NavLink class="nav-link" href="/settings" ActiveClass="active">
+                <span class="oi oi-cog"></span> Settings
+            </NavLink>
+        </nav>
+    </div>
+    <div class="main-content">
+        @Body
+    </div>
+</div>
+
+<style>
+    .app-container {
+        display: flex;
+        min-height: 100vh;
+    }
+    .sidebar {
+        background-color: #f8f9fa;
+        border-right: 1px solid #ddd;
+        padding-top: 20px;
+    }
+    .nav-link {
+        color: black;
+        padding: 10px 20px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .nav-link.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .main-content {
+        flex: 1;
+        padding: 20px;
+        overflow-x: auto;
+    }
+</style>
