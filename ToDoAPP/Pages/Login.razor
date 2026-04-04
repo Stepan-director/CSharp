@@ -1,0 +1,131 @@
+﻿@page "/login"
+@layout EmptyLayout
+@using ToDoAPP.Services
+@inject TaskService TaskService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h2 style="text-align: center;">Вход</h2>
+
+<div class="login-container">
+    <div class="form-group">
+        <label>Никнейм:</label>
+        <input @bind="username" class="form-control" placeholder="Введите никнейм" />
+    </div>
+    <div class="form-group">
+        <label>Пароль:</label>
+        <input @bind="password" type="password" class="form-control" placeholder="Введите пароль" />
+    </div>
+    
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    <div class="button-group">
+        <button type="button" class="btn btn-primary" disabled="@isLoading" @onclick="DoLogin">
+            @(isLoading ? "Загрузка..." : "Войти")
+        </button>
+        <a href="/register" class="btn btn-link">Нет аккаунта? Регистрация</a>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .btn-primary:hover {
+        background-color: #0069d9;
+    }
+    .btn-link {
+        background: none;
+        border: none;
+        color: #007bff;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+    .alert-danger {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+</style>
+
+@code {
+    private bool isLoading = false;
+    private string username = "";
+    private string password = "";
+    private string errorMessage = "";
+
+    private async Task DoLogin()
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Введите никнейм и пароль";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = "";
+        
+        try
+        {
+            var token = await TaskService.GetAccessTokenAsync(username, password);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                await JS.InvokeAsync<string>("localStorage.setItem", "accessToken", token);
+                await JS.InvokeAsync<string>("localStorage.setItem", "username", username);
+                await JS.InvokeVoidAsync("eval", "window.location.href = '/task'");
+            }
+            else
+            {
+                errorMessage = "Неверный никнейм или пароль";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Ошибка: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

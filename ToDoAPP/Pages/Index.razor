@@ -1,0 +1,14 @@
+﻿@page "/"
+@layout EmptyLayout
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("eval", "window.location.href = '/login'");
+        }
+    }
+}

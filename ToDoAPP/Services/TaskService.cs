@@ -9,6 +9,17 @@ public class TaskService
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
 
+    // Токен доступа
+    private string? _accessToken;
+
+    public bool IsAuthenticated => !string.IsNullOrEmpty(_accessToken);
+
+    public void Logout()
+    {
+        _accessToken = null;
+        _httpClient.DefaultRequestHeaders.Authorization = null;
+    }
+
     public TaskService(HttpClient httpClient)
     {
         _httpClient = httpClient;
@@ -17,6 +28,50 @@ public class TaskService
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true
         };
+    }
+
+    // Установить токен авторизации
+    public void SetAccessToken(string token)
+    {
+        _accessToken = token;
+        _httpClient.DefaultRequestHeaders.Authorization = 
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+    }
+
+    // Сохранить токен в localStorage (вызывать из компонента)
+    public string? GetAccessToken() => _accessToken;
+
+    // Получить токен через client_credentials
+    public async Task<string?> GetAccessTokenAsync(string clientId, string clientSecret)
+    {
+        try
+        {
+            var request = new Dictionary<string, string>
+            {
+                { "grant_type", "client_credentials" },
+                { "client_id", clientId },
+                { "client_secret", clientSecret }
+            };
+
+            var content = new FormUrlEncodedContent(request);
+            var response = await _httpClient.PostAsync("/oauth2/token", content);
+            Console.WriteLine($"Login response: {response.StatusCode}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Login response body: {json}");
+                using var doc = JsonDocument.Parse(json);
+                var token = doc.RootElement.GetProperty("access_token").GetString();
+                SetAccessToken(token!);
+                return token;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка получения токена: {ex.Message}");
+        }
+        return null;
     }
 
     // Получить все задачи
@@ -42,7 +97,9 @@ public class TaskService
     {
         try
         {
-            var content = new StringContent(JsonSerializer.Serialize(task, _jsonOptions), Encoding.UTF8, "application/json");
+            // Java ожидает поле "content", не "title"
+            var requestBody = new { content = task.Content, completed = task.Completed, dueDate = task.DueDate };
+            var content = new StringContent(JsonSerializer.Serialize(requestBody, _jsonOptions), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("/api/tasks", content);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
@@ -56,11 +113,12 @@ public class TaskService
     }
 
     // Обновить задачу
-    public async Task<TaskItem> UpdateTaskAsync(long id, TaskItem task)
+    public async Task<TaskItem> UpdateTaskAsync(Guid id, TaskItem task)
     {
         try
         {
-            var content = new StringContent(JsonSerializer.Serialize(task, _jsonOptions), Encoding.UTF8, "application/json");
+            var requestBody = new { content = task.Content, completed = task.Completed };
+            var content = new StringContent(JsonSerializer.Serialize(requestBody, _jsonOptions), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"/api/tasks/{id}", content);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
@@ -74,7 +132,7 @@ public class TaskService
     }
 
     // Удалить задачу
-    public async Task DeleteTaskAsync(long id)
+    public async Task DeleteTaskAsync(Guid id)
     {
         try
         {
@@ -93,8 +151,6 @@ public class TaskService
     {
         try
         {
-            // Форматируем дату в ISO 8601 формате, который ожидает Java LocalDateTime
-            // Отправляем дату с временем 00:00:00
             var dateTime = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
             var dateString = dateTime.ToString("yyyy-MM-ddTHH:mm:ss");
 
@@ -148,6 +204,30 @@ public class TaskService
         {
             Console.WriteLine($"Ошибка в GetOverdueTasksAsync: {ex.Message}");
             return new List<TaskItem>();
+        }
+    }
+
+    // Регистрация нового клиента
+    public async Task<bool> RegisterAsync(string clientId, string clientSecret)
+    {
+        try
+        {
+            var request = new Dictionary<string, string>
+            {
+                { "client_id", clientId },
+                { "client_secret", clientSecret },
+                { "grant_type", "client_credentials" }
+            };
+
+            var content = new FormUrlEncodedContent(request);
+            var response = await _httpClient.PostAsync("/api/clients/register", content);
+            
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка регистрации: {ex.Message}");
+            return false;
         }
     }
 }
