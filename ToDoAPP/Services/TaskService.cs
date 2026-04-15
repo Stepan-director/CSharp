@@ -42,7 +42,7 @@ public class TaskService
     public string? GetAccessToken() => _accessToken;
 
     // Получить токен через client_credentials
-    public async Task<string?> GetAccessTokenAsync(string clientId, string clientSecret)
+    public async Task<string?> GetAccessToken(string clientId, string clientSecret)
     {
         try
         {
@@ -75,7 +75,7 @@ public class TaskService
     }
 
     // Получить все задачи
-    public async Task<List<TaskItem>> GetAllTasksAsync()
+    public async Task<List<TaskItem>> GetAllTasks()
     {
         try
         {
@@ -93,7 +93,7 @@ public class TaskService
 
 
     // Добавить задачу
-    public async Task<TaskItem> AddTaskAsync(TaskItem task)
+    public async Task<TaskItem> AddTask(TaskItem task)
     {
         try
         {
@@ -113,7 +113,7 @@ public class TaskService
     }
 
     // Обновить задачу
-    public async Task<TaskItem> UpdateTaskAsync(Guid id, TaskItem task)
+    public async Task<TaskItem> UpdateTask(Guid id, TaskItem task)
     {
         try
         {
@@ -132,7 +132,7 @@ public class TaskService
     }
 
     // Удалить задачу
-    public async Task DeleteTaskAsync(Guid id)
+    public async Task DeleteTask(Guid id)
     {
         try
         {
@@ -147,7 +147,7 @@ public class TaskService
     }
 
     // Получить задачи на конкретную дату
-    public async Task<List<TaskItem>> GetTasksByDateAsync(DateTime date)
+    public async Task<List<TaskItem>> GetTasksByDate(DateTime date)
     {
         try
         {
@@ -179,7 +179,7 @@ public class TaskService
     }
 
     // Получить просроченные задачи
-    public async Task<List<TaskItem>> GetOverdueTasksAsync()
+    public async Task<List<TaskItem>> GetOverdueTasks()
     {
         try
         {
@@ -208,7 +208,7 @@ public class TaskService
     }
 
     // Регистрация нового клиента
-    public async Task<bool> RegisterAsync(string clientId, string clientSecret)
+    public async Task<bool> Register(string clientId, string clientSecret)
     {
         try
         {

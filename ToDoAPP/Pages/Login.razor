@@ -106,7 +106,7 @@
         
         try
         {
-            var token = await TaskService.GetAccessTokenAsync(username, password);
+            var token = await TaskService.GetAccessToken(username, password);
             
             if (!string.IsNullOrEmpty(token))
             {

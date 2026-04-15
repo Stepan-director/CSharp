@@ -332,12 +332,12 @@
     {
         if (currentFilter == "all")
         {
-            tasks = await TaskService.GetAllTasksAsync();
+            tasks = await TaskService.GetAllTasks();
         }
         else // "today"
         {
             var selectedDate = new DateTime(selectedYear, selectedMonth, selectedDay);
-            tasks = await TaskService.GetTasksByDateAsync(selectedDate);
+            tasks = await TaskService.GetTasksByDate(selectedDate);
         }
     }
 
@@ -375,11 +375,11 @@
     {
         if (isEditMode)
         {
-            await TaskService.UpdateTaskAsync(editTask.Id, editTask);
+            await TaskService.UpdateTask(editTask.Id, editTask);
         }
         else
         {
-            await TaskService.AddTaskAsync(editTask);
+            await TaskService.AddTask(editTask);
         }
         CloseModal();
         await LoadTasks();
@@ -394,13 +394,13 @@
     private async Task ToggleCompleted(TaskItem task)
     {
         task.Completed = !task.Completed;
-        await TaskService.UpdateTaskAsync(task.Id, task);
+        await TaskService.UpdateTask(task.Id, task);
         await LoadTasks();
     }
 
     private async Task DeleteTask(Guid id)
     {
-        await TaskService.DeleteTaskAsync(id);
+        await TaskService.DeleteTask(id);
         await LoadTasks();
     }
 }

@@ -129,7 +129,7 @@
             return;
         }
 
-        var success = await TaskService.RegisterAsync(username, password);
+        var success = await TaskService.Register(username, password);
         
         if (success)
         {
