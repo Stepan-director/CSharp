@@ -618,9 +618,25 @@
 
     private async Task ToggleCompleted(TaskItem task)
     {
-        task.Completed = !task.Completed;
-        await TaskService.UpdateTask(task.Id, task);
-        await LoadTasks();
+        var previousStatus = task.Completed;
+        var newStatus = !task.Completed;
+        
+        try
+        {
+            // Меняем статус локально сразу
+            task.Completed = newStatus;
+            StateHasChanged();
+            
+            // Отправляем запрос к API (без ожидания ответа для обновления UI)
+            await TaskService.UpdateTask(task.Id, task);
+        }
+        catch (Exception)
+        {
+            // При ошибке возвращаем прежнее состояние
+            task.Completed = previousStatus;
+            StateHasChanged();
+            throw;
+        }
     }
 
     private async Task DeleteTask(Guid id)

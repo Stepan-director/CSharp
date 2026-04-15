@@ -117,12 +117,28 @@ public class TaskService
     {
         try
         {
-            var requestBody = new { content = task.Content, completed = task.Completed };
+            Console.WriteLine($"Обновление задачи {id}: Completed={task.Completed}, Content={task.Content}");
+            
+            // Отправляем все поля задачи для обновления
+            var requestBody = new 
+            { 
+                content = task.Content, 
+                completed = task.Completed,
+                dueDate = task.DueDate
+            };
             var content = new StringContent(JsonSerializer.Serialize(requestBody, _jsonOptions), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"/api/tasks/{id}", content);
+            
+            Console.WriteLine($"Ответ сервера: {response.StatusCode}");
+            
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<TaskItem>(json, _jsonOptions)!;
+            Console.WriteLine($"Ответ тела: {json}");
+            
+            var result = JsonSerializer.Deserialize<TaskItem>(json, _jsonOptions)!;
+            Console.WriteLine($"Десериализовано: Completed={result.Completed}");
+            
+            return result;
         }
         catch (HttpRequestException ex)
         {
@@ -174,6 +190,35 @@ public class TaskService
         catch (Exception ex)
         {
             Console.WriteLine($"Ошибка в GetTasksByDateAsync: {ex.Message}");
+            return new List<TaskItem>();
+        }
+    }
+
+    // Получить выполненные задачи
+    public async Task<List<TaskItem>> GetCompletedTasks()
+    {
+        try
+        {
+            var url = "/api/tasks/completed";
+            Console.WriteLine($"Запрос к API: {url}");
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Ответ API: {json}");
+                return JsonSerializer.Deserialize<List<TaskItem>>(json, _jsonOptions) ?? new List<TaskItem>();
+            }
+            else
+            {
+                Console.WriteLine($"Ошибка API: {response.StatusCode}");
+                return new List<TaskItem>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка в GetCompletedTasks: {ex.Message}");
             return new List<TaskItem>();
         }
     }
