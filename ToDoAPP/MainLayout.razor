@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 
 <div class="app-container">
-    <div class="sidebar" style="width: 320px;">
+    <div class="sidebar" style="width: 280px;">
         <div class="profile">
             <div class="user-avatar">@(string.IsNullOrEmpty(username) ? "U" : username[0].ToString().ToUpper())</div>
             <h4>@username</h4> 
@@ -13,9 +13,6 @@
         <nav class="nav flex-column">
             <NavLink class="nav-link" href="/task" ActiveClass="active">
                 <span class="oi oi-document"></span> Task
-            </NavLink>
-            <NavLink class="nav-link" href="/settings" ActiveClass="active">
-                <span class="oi oi-cog"></span> Settings
             </NavLink>
         </nav>
         <div class="logout-section">
@@ -31,64 +28,105 @@
     .app-container {
         display: flex;
         min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .sidebar {
-        background-color: #f8f9fa;
-        border-right: 1px solid #ddd;
-        padding-top: 20px;
+        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+        border-right: none;
+        padding-top: 40px;
         display: flex;
         flex-direction: column;
+        box-shadow: 4px 0 20px rgba(30, 60, 114, 0.2);
+        transition: all 0.3s ease;
     }
     .user-avatar {
-        width: 60px;
-        height: 60px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
-        background-color: #007bff;
+        background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: 32px;
         font-weight: bold;
-        margin: 0 auto 10px;
+        margin: 0 auto 15px;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+    .profile {
+        margin-bottom: 30px;
     }
     .profile h4 {
         text-align: center;
         margin: 0;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
     }
     .nav-link {
-        color: black;
-        padding: 10px 20px;
+        color: rgba(255, 255, 255, 0.85);
+        padding: 14px 25px;
         text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        margin: 8px 15px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    .nav-link .oi-document {
+        font-size: 18px;
+        background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
     }
     .nav-link.active {
-        background-color: #007bff;
+        background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
         color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .nav-link.active .oi-document {
+        background: linear-gradient(135deg, white 0%, #e0f2fe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     .main-content {
         flex: 1;
-        padding: 20px;
+        padding: 30px;
         overflow-x: auto;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        min-height: 100vh;
     }
     .logout-section {
         margin-top: auto;
-        padding: 20px;
-        border-top: 1px solid #ddd;
+        padding: 25px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     .btn-logout {
         width: 100%;
-        padding: 10px;
-        background-color: #dc3545;
+        padding: 12px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 10px;
         cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
     }
     .btn-logout:hover {
-        background-color: #c82333;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
     }
 </style>
 

@@ -5,9 +5,9 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h2>Регистрация</h2>
-
 <div class="register-container">
+    <h2 class="form-title">Регистрация</h2>
+
     <div class="form-group">
         <label>Никнейм:</label>
         <input @bind="username" class="form-control" placeholder="Придумайте никнейм" />
@@ -26,74 +26,109 @@
         <div class="alert @(isSuccess ? "alert-success" : "alert-danger")">@message</div>
     }
 
-    <div class="button-group">
-        <button class="btn btn-primary" @onclick="DoRegister">Зарегистрироваться</button>
-        <a href="/login" class="btn btn-link">Уже есть аккаунт? Вход</a>
+    <button class="btn btn-primary" @onclick="DoRegister">Зарегистрироваться</button>
+
+    <div class="auth-links">
+        <span>Уже есть аккаунт?</span>
+        <a href="/login" class="auth-link">Вход</a>
     </div>
 </div>
 
 <style>
     .register-container {
         max-width: 400px;
-        margin: 50px auto;
-        padding: 30px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: #f8f9fa;
+        padding: 40px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        box-shadow: 0 20px 60px rgba(245, 87, 108, 0.4);
+    }
+    .form-title {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .auth-links {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+    .auth-link {
+        color: #fbbf24;
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 5px;
+        transition: color 0.3s ease;
+    }
+    .auth-link:hover {
+        color: #f59e0b;
+        text-decoration: underline;
     }
     .form-group {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
     .form-group label {
         display: block;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
         font-weight: 600;
+        color: #f1f5f9;
+        font-size: 14px;
     }
     .form-control {
         width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 12px 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        font-size: 15px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
     }
-    .button-group {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 20px;
+    .form-control:focus {
+        outline: none;
+        border-color: #fbbf24;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
     }
     .btn-primary {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 20px;
+        width: 100%;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #1e3a5f;
+        padding: 14px 20px;
         border: none;
-        border-radius: 4px;
+        border-radius: 8px;
         cursor: pointer;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
     }
     .btn-primary:hover {
-        background-color: #0069d9;
-    }
-    .btn-link {
-        background: none;
-        border: none;
-        color: #007bff;
-        cursor: pointer;
-        text-decoration: underline;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
     }
     .alert-danger {
-        color: #721c24;
-        background-color: #f8d7da;
-        border-color: #f5c6cb;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 15px;
+        color: #fecaca;
+        background-color: rgba(220, 38, 38, 0.2);
+        border: 1px solid rgba(220, 38, 38, 0.4);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
     }
     .alert-success {
-        color: #155724;
-        background-color: #d4edda;
-        border-color: #c3e6cb;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 15px;
+        color: #d1fae5;
+        background-color: rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
     }
 </style>
 
