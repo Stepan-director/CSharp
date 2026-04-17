@@ -9,6 +9,17 @@ public class TaskService
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
 
+    // Токен доступа
+    private string? _accessToken;
+
+    public bool IsAuthenticated => !string.IsNullOrEmpty(_accessToken);
+
+    public void Logout()
+    {
+        _accessToken = null;
+        _httpClient.DefaultRequestHeaders.Authorization = null;
+    }
+
     public TaskService(HttpClient httpClient)
     {
         _httpClient = httpClient;
@@ -19,8 +30,52 @@ public class TaskService
         };
     }
 
+    // Установить токен авторизации
+    public void SetAccessToken(string token)
+    {
+        _accessToken = token;
+        _httpClient.DefaultRequestHeaders.Authorization = 
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+    }
+
+    // Сохранить токен в localStorage (вызывать из компонента)
+    public string? GetAccessToken() => _accessToken;
+
+    // Получить токен через client_credentials
+    public async Task<string?> GetAccessToken(string clientId, string clientSecret)
+    {
+        try
+        {
+            var request = new Dictionary<string, string>
+            {
+                { "grant_type", "client_credentials" },
+                { "client_id", clientId },
+                { "client_secret", clientSecret }
+            };
+
+            var content = new FormUrlEncodedContent(request);
+            var response = await _httpClient.PostAsync("/oauth2/token", content);
+            Console.WriteLine($"Login response: {response.StatusCode}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Login response body: {json}");
+                using var doc = JsonDocument.Parse(json);
+                var token = doc.RootElement.GetProperty("access_token").GetString();
+                SetAccessToken(token!);
+                return token;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка получения токена: {ex.Message}");
+        }
+        return null;
+    }
+
     // Получить все задачи
-    public async Task<List<TaskItem>> GetAllTasksAsync()
+    public async Task<List<TaskItem>> GetAllTasks()
     {
         try
         {
@@ -38,11 +93,13 @@ public class TaskService
 
 
     // Добавить задачу
-    public async Task<TaskItem> AddTaskAsync(TaskItem task)
+    public async Task<TaskItem> AddTask(TaskItem task)
     {
         try
         {
-            var content = new StringContent(JsonSerializer.Serialize(task, _jsonOptions), Encoding.UTF8, "application/json");
+            // Java ожидает поле "content", не "title"
+            var requestBody = new { content = task.Content, completed = task.Completed, dueDate = task.DueDate };
+            var content = new StringContent(JsonSerializer.Serialize(requestBody, _jsonOptions), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("/api/tasks", content);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
@@ -56,15 +113,32 @@ public class TaskService
     }
 
     // Обновить задачу
-    public async Task<TaskItem> UpdateTaskAsync(long id, TaskItem task)
+    public async Task<TaskItem> UpdateTask(Guid id, TaskItem task)
     {
         try
         {
-            var content = new StringContent(JsonSerializer.Serialize(task, _jsonOptions), Encoding.UTF8, "application/json");
+            Console.WriteLine($"Обновление задачи {id}: Completed={task.Completed}, Content={task.Content}");
+            
+            // Отправляем все поля задачи для обновления
+            var requestBody = new 
+            { 
+                content = task.Content, 
+                completed = task.Completed,
+                dueDate = task.DueDate
+            };
+            var content = new StringContent(JsonSerializer.Serialize(requestBody, _jsonOptions), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"/api/tasks/{id}", content);
+            
+            Console.WriteLine($"Ответ сервера: {response.StatusCode}");
+            
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<TaskItem>(json, _jsonOptions)!;
+            Console.WriteLine($"Ответ тела: {json}");
+            
+            var result = JsonSerializer.Deserialize<TaskItem>(json, _jsonOptions)!;
+            Console.WriteLine($"Десериализовано: Completed={result.Completed}");
+            
+            return result;
         }
         catch (HttpRequestException ex)
         {
@@ -74,7 +148,7 @@ public class TaskService
     }
 
     // Удалить задачу
-    public async Task DeleteTaskAsync(long id)
+    public async Task DeleteTask(Guid id)
     {
         try
         {
@@ -89,12 +163,10 @@ public class TaskService
     }
 
     // Получить задачи на конкретную дату
-    public async Task<List<TaskItem>> GetTasksByDateAsync(DateTime date)
+    public async Task<List<TaskItem>> GetTasksByDate(DateTime date)
     {
         try
         {
-            // Форматируем дату в ISO 8601 формате, который ожидает Java LocalDateTime
-            // Отправляем дату с временем 00:00:00
             var dateTime = new DateTime(date.Year, date.Month, date.Day, 0, 0, 0);
             var dateString = dateTime.ToString("yyyy-MM-ddTHH:mm:ss");
 
@@ -122,8 +194,37 @@ public class TaskService
         }
     }
 
+    // Получить выполненные задачи
+    public async Task<List<TaskItem>> GetCompletedTasks()
+    {
+        try
+        {
+            var url = "/api/tasks/completed";
+            Console.WriteLine($"Запрос к API: {url}");
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Ответ API: {json}");
+                return JsonSerializer.Deserialize<List<TaskItem>>(json, _jsonOptions) ?? new List<TaskItem>();
+            }
+            else
+            {
+                Console.WriteLine($"Ошибка API: {response.StatusCode}");
+                return new List<TaskItem>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка в GetCompletedTasks: {ex.Message}");
+            return new List<TaskItem>();
+        }
+    }
+
     // Получить просроченные задачи
-    public async Task<List<TaskItem>> GetOverdueTasksAsync()
+    public async Task<List<TaskItem>> GetOverdueTasks()
     {
         try
         {
@@ -148,6 +249,30 @@ public class TaskService
         {
             Console.WriteLine($"Ошибка в GetOverdueTasksAsync: {ex.Message}");
             return new List<TaskItem>();
+        }
+    }
+
+    // Регистрация нового клиента
+    public async Task<bool> Register(string clientId, string clientSecret)
+    {
+        try
+        {
+            var request = new Dictionary<string, string>
+            {
+                { "client_id", clientId },
+                { "client_secret", clientSecret },
+                { "grant_type", "client_credentials" }
+            };
+
+            var content = new FormUrlEncodedContent(request);
+            var response = await _httpClient.PostAsync("/api/clients/register", content);
+            
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка регистрации: {ex.Message}");
+            return false;
         }
     }
 }

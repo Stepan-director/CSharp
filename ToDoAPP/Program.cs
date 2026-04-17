@@ -5,10 +5,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// Регистрируем HttpClient для TaskService
-builder.Services.AddHttpClient<TaskService>(client =>
+builder.Services.AddScoped<TaskService>(sp =>
 {
-    client.BaseAddress = new Uri("http://localhost:8080");
+    var httpClient = new HttpClient
+    {
+        BaseAddress = new Uri("http://localhost:8080")
+    };
+    return new TaskService(httpClient);
 });
 
 var app = builder.Build();
